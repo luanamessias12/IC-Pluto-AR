@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saturno</title>
+  <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+  <script src="https://unpkg.com/aframe-particle-system-component@1.0.x/dist/aframe-particle-system-component.min.js"></script>
+  <style>
+    /* Botões no canto superior esquerdo */
+    #buttonContainer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 15px;
+      z-index: 10;
+    }
+
+    .scene-button {
+      padding: 10px 20px;
+      background-color: #250036;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .scene-button:hover {
+      background-color: #660273;
+    }
+
+    /* Card lateral */
+    #infoCard {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      width: 280px;
+      padding: 20px;
+      background-color: rgba(0, 1, 13, 0.9);
+      color: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+      font-family: Arial, sans-serif;
+      display: none;
+      z-index: 10;
+    }
+
+    #infoCard h2 {
+      margin-top: 0;
+      color: #A305A6;
+    }
+  </style>
+
+<style id="btn-motion">
+  .scene-button, #startButton, #backButton, button, a.scene-button {
+    transition: transform .25s ease, background-color .3s ease, box-shadow .3s ease !important;
+  }
+  .scene-button:hover, #startButton:hover, #backButton:hover { transform: translateY(-3px) scale(1.06); box-shadow: 0 8px 20px rgba(163, 5, 166, .55); }
+  #startButton:hover, #backButton:hover { transform: translateX(-50%) translateY(-3px) scale(1.06); }
+  .scene-button:active, #startButton:active, #backButton:active { transform: scale(.94); }
+  #startButton:active, #backButton:active { transform: translateX(-50%) scale(.94); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+
+<body>
+
+  <!-- Botões -->
+  <div id="buttonContainer">
+    <button id="toggleOrbitsButton" class="scene-button">Ocultar Órbitas</button>
+    <button id="toggleInfoButton" class="scene-button">Mostrar Info</button>
+    <a href="/plataforma/planetas/flashcards/saturnocard" class="scene-button">Voltar</a>
+  </div>
+
+  <!-- Card de informações -->
+  <div id="infoCard">
+    <h2>Saturno</h2>
+    <p><b>Tamanho (diâmetro):</b> 116.460 km</p>
+    <p><b>Massa:</b> 5,68 × 10²⁶ kg</p>
+    <p><b>Posição no Sistema Solar:</b> 6º planeta</p>
+    <p><b>Tipo:</b> Gasoso</p>
+    <p><b>Atmosfera:</b> Hidrogênio, hélio</p>
+    <p><b>Satélites Naturais:</b> +80 (Titã, Encélado, etc.)</p>
+  </div>
+
+  <a-scene>
+    <!-- Poeira espacial -->
+    <a-entity position="0 0 0" particle-system="preset: dust; particleCount: 10000"></a-entity>
+
+    <!-- Agrupamento principal -->
+    <a-entity scale="0.15 0.15 0.15">
+      <!-- Saturno -->
+      <a-sphere position="0 12 -10" radius="5.25"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing:linear"
+        material="src: /img/saturno-img.jpg">
+      </a-sphere>
+
+      <!-- Anéis -->
+      <a-ring position="0 12 -10" rotation="90 0 0" radius-inner="6" radius-outer="10"
+        material="color: #cbb48b; opacity: 0.85; side: double; roughness: 0.7">
+      </a-ring>
+    </a-entity>
+
+    <!-- Fundo de estrelas -->
+    <a-sky material="src: /img/fundo_estrelado.jpg"></a-sky>
+  </a-scene>
+
+  <!-- Script -->
+  <script>
+    const toggleButton = document.getElementById('toggleOrbitsButton');
+    const toggleInfoButton = document.getElementById('toggleInfoButton');
+    const infoCard = document.getElementById('infoCard');
+    const orbits = document.querySelectorAll('.orbit');
+    let orbitsVisible = true;
+    let cardVisible = false;
+
+    function fadeOrbits(toOpacity, duration = 500) {
+      orbits.forEach(orbit => {
+        let material = orbit.getObject3D('mesh').material;
+        if (!material) return;
+        let start = material.opacity;
+        let startTime = null;
+        function animate(time) {
+          if (!startTime) startTime = time;
+          let elapsed = time - startTime;
+          let progress = Math.min(elapsed / duration, 1);
+          material.opacity = start + (toOpacity - start) * progress;
+          material.transparent = true;
+          if (progress < 1) requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+      });
+    }
+
+    toggleButton.addEventListener('click', () => {
+      orbitsVisible = !orbitsVisible;
+      if (orbitsVisible) {
+        fadeOrbits(0.7);
+        toggleButton.textContent = 'Ocultar Órbitas';
+      } else {
+        fadeOrbits(0);
+        toggleButton.textContent = 'Mostrar Órbitas';
+      }
+    });
+
+    toggleInfoButton.addEventListener('click', () => {
+      cardVisible = !cardVisible;
+      infoCard.style.display = cardVisible ? 'block' : 'none';
+      toggleInfoButton.textContent = cardVisible ? 'Ocultar Info' : 'Mostrar Info';
+    });
+  </script>
+</body>
+</html>
